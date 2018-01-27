@@ -13,12 +13,12 @@ namespace BeaconsCoverageInGeometricGraphs
     /// </summary>
     public class Vertex:Point
     {
-        List<Vertex> _neighbors;
+        List<Vertex> _adjacents;
 
         /// <summary>
         /// Internal neighbors list to be opperated from graph.
         /// </summary>
-        internal List<Vertex> NeighborsList => _neighbors;
+        internal List<Vertex> AdjacentsList => _adjacents;
 
         /// <summary>
         /// Creates a new vertex in the specified X,Y position.
@@ -26,10 +26,17 @@ namespace BeaconsCoverageInGeometricGraphs
         /// </summary>
         /// <param name="X">X position of the vertex.</param>
         /// <param name="Y">Y position of the vertex.</param>
-        internal Vertex(double X, double Y):base(X, Y)
+        /// <param name="index"> Index of the vertex in the graph.</param>
+        internal Vertex(double X, double Y, int index):base(X, Y)
         {
-            _neighbors = new List<Vertex>();
+            _adjacents = new List<Vertex>();
+            Index = index;
         }
+
+        /// <summary>
+        /// Gets the index of the vertex in the graph.
+        /// </summary>
+        public int Index { get; internal set; }
 
         /// <summary>
         /// Gets the degree of the vertex.
@@ -38,19 +45,19 @@ namespace BeaconsCoverageInGeometricGraphs
         {
             get
             {
-                return _neighbors.Count;
+                return _adjacents.Count;
             }
         }
 
         /// <summary>
         /// Gets an IEnumerable of the neighbors of the vertex.
         /// </summary>
-        public IEnumerable<Vertex> Neighbors
+        public IEnumerable<Vertex> Adjacents
         {
             get
             {
                 //*** Creo q hay una forma mas eficiente de devolver el enumerador de neighbors, aun sin exponer la lista directamente para q no le hagan cast.
-                foreach (Vertex neighbor in _neighbors)
+                foreach (Vertex neighbor in _adjacents)
                     yield return neighbor;
             }
         }
@@ -58,19 +65,20 @@ namespace BeaconsCoverageInGeometricGraphs
         /// <summary>
         /// Gets the vertex neighbor at the specified index.
         /// </summary>
-        /// <param name="index">The zero based index of the vertex neighbor to get</param>
+        /// <param name="index">The zero based index of the vertex neighbor to get.</param>
+        /// <exception cref="IndexOutOfRangeException"></exception>
         public Vertex this[int index]
         {
             get
             {
-                if (index < 0 || index >= _neighbors.Count)
+                if (index < 0 || index >= _adjacents.Count)
                     throw new IndexOutOfRangeException();
 
-                return _neighbors[index];
+                return _adjacents[index];
             }
             internal set
             {
-                _neighbors[index] = value;
+                _adjacents[index] = value;
             }
         }
     }
