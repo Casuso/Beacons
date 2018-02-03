@@ -58,7 +58,7 @@ namespace BeaconsCoverageInGeometricGraphs
         /// <param name="X">X position of the vertex.</param>
         /// <param name="Y">Y position of the vertex.</param>
         /// <returns>The new vertex created.</returns>
-        public Vertex CreateAndAddVertexAt(double X, double Y)
+        public virtual Vertex AddVertexAt(double X, double Y)
         {
             Vertex v = new Vertex(X, Y, _vertices.Count);
 
@@ -74,34 +74,84 @@ namespace BeaconsCoverageInGeometricGraphs
         /// <param name="v">The other vertex of the edge.</param>
         /// <returns>True if the edge is not a graph loop or a multiple edge. False in other case.</returns>
         /// <exception cref="InvalidOperationException">At least one of the vertices don't belong to this graph.</exception>  
-        public bool AddEdge(Vertex u, Vertex v)
+        public virtual bool AddEdge(Vertex u, Vertex v)
         {
             // check if the vertices belong to this graph
             if (u.Index >= _vertices.Count || _vertices[u.Index] != u || v.Index >= _vertices.Count || _vertices[v.Index] != v)
                 throw new InvalidOperationException("Vertices must belong to the current graph.");
 
-
             // check possible graph loop
             if (u == v)
                 return false;
 
-            // check possible multiple edges
+            // ensures u has the lowes degree for faster procedure 
             if (v.Degree < u.Degree)
             {
-                // swap u, v
+                // swap v with u
                 var temp = u;
                 u = v;
                 v = temp;
             }
 
+            // check possible multiple edges
             foreach (Vertex adjacent in u.AdjacentsList)
                 if (adjacent == v)
                     return false;
 
-
             // add edge and return true
             u.AdjacentsList.Add(v);
             v.AdjacentsList.Add(u);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Remove a vertex from the graph.
+        /// </summary>
+        /// <param name="u">Vertex to be removed from the graph.</param>
+        /// <exception cref="InvalidOperationException">The vertex don't belong to this graph.</exception>
+        public virtual void RemoveVertex(Vertex u)
+        {
+            // check if the vertex belong to this graph
+            if(u.Index >= _vertices.Count || _vertices[u.Index] != u)
+                throw new InvalidOperationException("Vertex must belong to the current graph.");
+
+            // remove edges from adjacents
+            foreach (Vertex v in u.AdjacentsList)
+                v.AdjacentsList.Remove(u);
+
+            // remove u from graph
+            _vertices.RemoveAt(u.Index);
+        }
+
+        /// <summary>
+        /// Remove and edge from the graph if the edge exist.
+        /// </summary>
+        /// <param name="u">One vertex of the edge.</param>
+        /// <param name="v">The other vertex of the edge.</param>
+        /// <returns>True if the edge exists. False in other case.</returns>
+        /// <exception cref="InvalidOperationException">At least one of the vertices don't belong to this graph.</exception>  
+        public virtual bool RemoveEdge(Vertex u, Vertex v)
+        {
+            // check if the vertices belong to this graph
+            if (u.Index >= _vertices.Count || _vertices[u.Index] != u || v.Index >= _vertices.Count || _vertices[v.Index] != v)
+                throw new InvalidOperationException("Vertices must belong to the current graph.");
+
+            // ensures u has the lowes degree for faster procedure 
+            if (v.Degree < u.Degree)
+            {
+                // swap v with u
+                var temp = u;
+                u = v;
+                v = temp;
+            }
+
+            // check (and remove) if the edge exists in u
+            if (!u.AdjacentsList.Remove(v))
+                return false;
+
+            // remove the edge from v and return true
+            v.AdjacentsList.Remove(u);
 
             return true;
         }
